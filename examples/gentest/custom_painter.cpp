@@ -10,6 +10,7 @@ CustomPainter::CustomPainter()
   m_maxImageHeightPerRow = 0.0f;
   m_imageColumnIndex = -1;
   m_topStart = 11.55f;
+  headerHeight = 0.25f;
 }
 
 void CustomPainter::AddNewPage()
@@ -115,14 +116,17 @@ double CustomPainter::GetPageWidth() const
   return m_pageWidth;
 }
 
-void CustomPainter::OutputTableColHeaders(const std::string *headingTexts, double fontSize, float rowTop)
+void CustomPainter::OutputTableColHeaders(double fontSize, float rowTop)
 {
+  if (headingTexts == nullptr) {
+    throw PdfGenerationException("NO-HEADERS-PROVIDED", "Set headings/headers first...");
+  }
+
   if (rowTop == -1.0f)
   {
     rowTop = m_topStart;
   }
 
-  float headerHeight = 0.25f;
   float runningColStart = 0;
   float previousColStart = m_firstColumnStart;
   float leftPadding = 0.05f;
@@ -138,6 +142,16 @@ void CustomPainter::OutputTableColHeaders(const std::string *headingTexts, doubl
     previousColStart = runningColStart;
   }
   currentTableRowOffset = rowTop - headerHeight;
+}
+
+void CustomPainter::startNextPage()
+{
+  // output outer lines for completed previous page
+  OutputTableOuterLines();
+
+  // start next page
+  AddNewPage();
+  OutputTableColHeaders(12.96f);
 }
 
 void CustomPainter::OutputTableRowValues(const std::string *valueTexts, double fontSize)
@@ -162,6 +176,8 @@ void CustomPainter::OutputTableRowValues(const std::string *valueTexts, double f
     previousColStart = runningColStart;
   }
   currentTableRowOffset -= rowHeight;
+  if (currentTableRowOffset - rowHeight < 0.25)
+    startNextPage();
 }
 
 void CustomPainter::OutputTableOuterLines()
@@ -218,11 +234,6 @@ void CustomPainter::SetImagesFolder(const char *value)
   m_imagesFolder = string(value);
 }
 
-void CustomPainter::SetImagesFolder(const string &value)
-{
-  m_imagesFolder = value;
-}
-
 void CustomPainter::SetMaxImageWidthPerRow(float value)
 {
   m_maxImageWidthPerRow = value;
@@ -231,4 +242,9 @@ void CustomPainter::SetMaxImageWidthPerRow(float value)
 void CustomPainter::SetTableRowTopPadding(float value)
 {
   m_tableRowTopPadding = value;
+}
+
+void CustomPainter::SetHeadingTexts(string *value)
+{
+  headingTexts = value;
 }

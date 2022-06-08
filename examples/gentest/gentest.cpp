@@ -66,7 +66,8 @@ void GeneratePdfFile(const string_view& filename)
       customPainter.SetFirstColumnStart(0.26f); // left most start position
       customPainter.SetColWidths(colLineWidths);
 
-      customPainter.OutputTableColHeaders(colHeadTexts, 12.96f);
+      customPainter.SetHeadingTexts(colHeadTexts);
+      customPainter.OutputTableColHeaders(12.96f);
 
       // output data
       customPainter.SetTableRowHeight(0.25f); // vertical difference between each data row
@@ -76,23 +77,28 @@ void GeneratePdfFile(const string_view& filename)
       customPainter.SetImageColumnIndex(2); // zero-based index
       customPainter.SetImagesFolder(currentFolder);
       for (int i = 0; i < totalRows; ++i)
-      {
-        if (i % 4 == 0 && i > 0)
-        {
-          // output outer lines for completed previous page
-          customPainter.OutputTableOuterLines();
-
-          // start next page
-          customPainter.AddNewPage();
-          customPainter.OutputTableColHeaders(colHeadTexts, 12.96f);
-        }
         customPainter.OutputTableRowValues(colValues[i], 11.04f);
-      }
 
       // output outer lines for last page
       customPainter.OutputTableOuterLines();
 
       customPainter.WriteDocumentToFile(filename.data());
+    }
+    catch (PdfGenerationException& e)
+    {
+        // All pdfmm methods may throw exceptions
+        // make sure that painter.FinishPage() is called
+        // or who will get an assert in its destructor
+        try
+        {
+          customPainter.Terminate();
+        }
+        catch (...)
+        {
+            // Ignore errors this time
+        }
+
+        throw e;
     }
     catch (PdfError& e)
     {

@@ -11,6 +11,36 @@
 using namespace std;
 using namespace mm;
 
+
+
+class PdfGenerationException : public std::exception
+{
+
+public:
+  PdfGenerationException() = delete;
+
+  explicit PdfGenerationException(std::string errorCode, std::string message)
+      : code_(std::move(errorCode)), message_(std::move(message))
+  {
+  }
+
+  const char *what() const noexcept override
+  {
+    return code_.c_str();
+  }
+
+  const std::string &getMessage() const
+  {
+    return message_;
+  }
+
+private:
+  std::string code_;
+  std::string message_;
+
+};
+
+
 class CustomPainter
 {
 public:
@@ -32,7 +62,7 @@ public:
   double GetPageWidth() const;
 
   // example/sample specific methods
-  void OutputTableColHeaders(const std::string *headingTexts, double fontSize, float rowTop = -1.0f);
+  void OutputTableColHeaders(double fontSize, float rowTop = -1.0f);
   void OutputTableRowValues(const std::string *valueTexts, double fontSize);
   void OutputTableOuterLines();
 
@@ -45,9 +75,9 @@ public:
   void SetMaxImageHeightPerRow(float maxImageHeightPerRow);
   void SetImageColumnIndex(int imageColumnIndex);
   void SetImagesFolder(const char* imagesFolder);
-  void SetImagesFolder(const string &imagesFolder);
   void SetMaxImageWidthPerRow(float maxImageHeightPerRow);
   void SetTableRowTopPadding(float value);
+  void SetHeadingTexts(string *headingTexts);
 
 private:
   // fields only used within this class
@@ -56,6 +86,8 @@ private:
   PdfFont* font;
   std::vector<PdfPage*> pages;
   float currentTableRowOffset;
+
+  float headerHeight;
 
   // fields with getters
   double m_pageHeight;
@@ -72,6 +104,10 @@ private:
   std::string m_imagesFolder;
   float m_maxImageWidthPerRow;
   float m_tableRowTopPadding;
+  std::string *headingTexts;
+
+  // private methods
+  void startNextPage();
 
 };
 

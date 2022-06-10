@@ -16,7 +16,7 @@
 // You should always use pdfmm.h and not try to include
 // the required headers on your own.
 #include <pdfmm/pdfmm.h>
-#include <csignal>
+#include <unistd.h>
 #include "custom_painter.h"
 
 // All pdfmm classes are member of the pdfmm namespace.
@@ -59,23 +59,32 @@ void GeneratePdfFile(const string_view& filename)
   CustomPainter customPainter;
     try
     {
+      //customPainter.SetTopStart(11.45f);
+      customPainter.SetVerticalPageMargin(0.24f); // top most start position
+      //customPainter.SetFirstColumnStart(0.26f);
+      customPainter.SetHorizontalPageMargin(0.26f); // left most start position
+
+      customPainter.SetTitle("Custom-Report");
+      customPainter.SetAfterTitleTextLeft("User-ID: 123");
+      customPainter.SetAfterTitleTextRight("Username: joe");
+      customPainter.SetAddDateTime(true);
+      customPainter.SetAddPageNumber(true);
+
       customPainter.AddNewPage();
 
-      customPainter.SetTotalCols(totalCols); // top most start position
-      customPainter.SetTopStart(11.45f); // top most start position
-      customPainter.SetFirstColumnStart(0.26f); // left most start position
-      customPainter.SetColWidths(colLineWidths);
+      customPainter.SetTableTotalCols(totalCols); // top most start position
+      customPainter.SetTableColWidths(colLineWidths);
 
-      customPainter.SetHeadingTexts(colHeadTexts);
-      customPainter.OutputTableColHeaders(12.96f);
+      customPainter.SetTableHeadingTexts(colHeadTexts);
+      customPainter.OutputTableColHeaders(12.86f);
 
       // output data
       customPainter.SetTableRowHeight(0.25f); // vertical difference between each data row
       customPainter.SetTableRowTopPadding(0.25f); // top padding for each data row
-      customPainter.SetMaxImageWidthPerRow(4.05f);
-      customPainter.SetMaxImageHeightPerRow(2.4f);
-      customPainter.SetImageColumnIndex(2); // zero-based index
-      customPainter.SetImagesFolder(currentFolder);
+      customPainter.SetTableMaxImageWidthPerRow(4.05f);
+      customPainter.SetTableMaxImageHeightPerRow(2.05f);
+      customPainter.SetTableImageColumnIndex(2); // zero-based index
+      customPainter.SetTableImagesFolder(currentFolder);
       for (int i = 0; i < totalRows; ++i)
         customPainter.OutputTableRowValues(colValues[i], 11.04f);
 
